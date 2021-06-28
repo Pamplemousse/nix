@@ -89,55 +89,52 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     return 0;
   }
 
-  for (auto & i : attrPaths) {
-      Value & v(*findAlongAttrPath(*state, i, *autoArgs, vRoot).first);
-      state->forceValue(v);
+  state->forceValue(vRoot);
 
-      PathSet context;
-      DrvInfos drvs;
+  PathSet context;
+  DrvInfos drvs;
 
+  try {
+    getDerivations(*state, vRoot, "", *autoArgs, drvs, false);
+  }
+  // Some errors are legitimate, so we want to gracefully return when they are raised.
+  catch (const EvalError &) {
+    return 0;
+  }
+  catch (const SysError &) {
+    return 0;
+  }
+  catch (const UndefinedVarError &) {
+    return 0;
+  }
+  catch (const Unsupported &) {
+    return 0;
+  }
+
+  for (auto & i : drvs) {
+      Path drvPath;
       try {
-        getDerivations(*state, v, "", *autoArgs, drvs, false);
+        drvPath = i.queryDrvPath();
       }
       // Some errors are legitimate, so we want to gracefully return when they are raised.
       catch (const EvalError &) {
-        return 0;
-      }
-      catch (const SysError &) {
-        return 0;
-      }
-      catch (const UndefinedVarError &) {
         return 0;
       }
       catch (const Unsupported &) {
         return 0;
       }
 
-      for (auto & i : drvs) {
-          Path drvPath;
-          try {
-            drvPath = i.queryDrvPath();
-          }
-          // Some errors are legitimate, so we want to gracefully return when they are raised.
-          catch (const EvalError &) {
-            return 0;
-          }
-          catch (const Unsupported &) {
-            return 0;
-          }
-
-          string outputName = i.queryOutputName();
-          if (outputName == "")
-              // Real code throws an error in that case, as it lacks the `outputName` attribute;
-              // We exit gracefully instead.
-              return 0;
-          else {
-              Path rootName = absPath(gcRoot);
-              if (++rootNr > 1) rootName += "-" + std::to_string(rootNr);
-              auto store2 = state->store.dynamic_pointer_cast<LocalFSStore>();
-              if (store2)
-                  drvPath = store2->addPermRoot(store2->parseStorePath(drvPath), rootName);
-          }
+      string outputName = i.queryOutputName();
+      if (outputName == "")
+          // Real code throws an error in that case, as it lacks the `outputName` attribute;
+          // We exit gracefully instead.
+          return 0;
+      else {
+          Path rootName = absPath(gcRoot);
+          if (++rootNr > 1) rootName += "-" + std::to_string(rootNr);
+          auto store2 = state->store.dynamic_pointer_cast<LocalFSStore>();
+          if (store2)
+              drvPath = store2->addPermRoot(store2->parseStorePath(drvPath), rootName);
       }
   }
 
