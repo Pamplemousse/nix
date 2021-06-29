@@ -17,6 +17,9 @@ ASAN_OPTIONS=detect_leaks=false ./fuzzer \
   -merge=1 \
   fuzz/corpus/ fuzz/seeds/
 
+DICTIONARY=$(mktemp)
+cat fuzz/dictionaries/* > "$DICTIONARY"
+
 #
 # Run the fuzzer(s)
 #
@@ -27,6 +30,13 @@ MAX_MEMORY=2500
 
 ASAN_OPTIONS="detect_leaks=false" ./fuzzer \
   -artifact_prefix="fuzz/results/" \
+  -dict="$DICTIONARY" \
   -rss_limit_mb="$MAX_MEMORY" \
   -fork=4 \
   fuzz/corpus/
+
+#
+# Teardown / Clean
+#
+
+rm "$DICTIONARY"
