@@ -1,5 +1,6 @@
 #include "attr-path.hh"
 #include "eval.hh"
+#include "filetransfer.hh"
 #include "get-drvs.hh"
 #include "globals.hh"
 #include "local-fs-store.hh"
@@ -28,6 +29,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   Strings attrPaths = {""};
   Bindings * autoArgs = state->allocBindings(0);
+
+  fileTransferSettings.tries = 1;
 
   // Format input data into an expression
 
@@ -73,6 +76,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   catch (const UsageError &) {
     return 0;
   }
+  catch (const FileTransferError &) {
+    return 0;
+  }
   catch (const TypeError &) {
     return 0;
   }
@@ -99,6 +105,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   }
   // Some errors are legitimate, so we want to gracefully return when they are raised.
   catch (const EvalError &) {
+    return 0;
+  }
+  catch (const FileTransferError &) {
     return 0;
   }
   catch (const SysError &) {
