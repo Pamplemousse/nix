@@ -22,4 +22,4 @@ fuzzer: fuzz/fuzz_target.cc $(foreach l,$(libs),src/$(l)/$(subst lib,libnix,$(l)
 memory: fuzz/memory.cc
 	$(CXX) -shared $< -o fuzz/libmemory.so
 
-clean-files += fuzz/*.o fuzzer
+clean-files += fuzz/*.o fuzzer $(shell find fuzz/seeds/ -type l)

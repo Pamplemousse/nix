@@ -77,6 +77,7 @@ perl/Makefile.config
 # /fuzz/
 fuzz/corpus/*
 fuzz/results/*
+fuzz/seeds/*
 
 /perl/lib/Nix/Config.pm
 /perl/lib/Nix/Store.cc
