@@ -14,10 +14,12 @@ else
 	fuzz_CXXFLAGS += -O1
 endif
 
-fuzz_LDFLAGS = $(nix_LDFLAGS) $(foreach l,$(libs),-Lsrc/$(l) $(subst lib,nix,-l$(l)))
+fuzz_LDFLAGS = $(nix_LDFLAGS) $(foreach l,$(libs),-Lsrc/$(l) $(subst lib,nix,-l$(l))) -Lfuzz/ -lmemory
 
 fuzzer: fuzz/fuzz_target.cc $(foreach l,$(libs),src/$(l)/$(subst lib,libnix,$(l)).$(SO_EXT))
 	$(CXX) $(GLOBAL_CXXFLAGS) $(fuzz_CXXFLAGS) $(fuzz_LDFLAGS) $(BDW_GC_LIBS) $< -o fuzzer
 
+memory: fuzz/memory.cc
+	$(CXX) -shared $< -o fuzz/libmemory.so
 
 clean-files += fuzz/*.o fuzzer

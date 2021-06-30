@@ -8,10 +8,15 @@
 #include "types.hh"
 #include "url.hh"
 
+// Our memory management utils to seriously reduce the amount of leaks.
+#include "memory.hh"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   using namespace nix;
+
+  // Allocate "our heap" to be freed at the end of the function to ward off leaks.
+  allocate_arena();
 
   // Initialize some stuff;
   // See `src/nix-instantiate/nix-instantiate.cc` for more info.
@@ -146,6 +151,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
               drvPath = store2->addPermRoot(store2->parseStorePath(drvPath), rootName);
       }
   }
+
+  // Free all allocated memory before next run.
+  free_arena();
 
   return 0;
 }
