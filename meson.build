@@ -22,7 +22,7 @@ project(
     license : 'MIT')
 
 
-# init compiler 
+# init compiler
 #-------------------------------------------------
 cpp = meson.get_compiler('cpp')
 
@@ -117,7 +117,7 @@ sys_name = host_machine.system().to_lower()
 
 cpu_archs = ['x86_64', 'armv6', 'armv7', '']
 
-foreach cpu : cpu_archs 
+foreach cpu : cpu_archs
     if host_machine.cpu().contains(cpu)
         if cpu.contains('armv')
             machine_name = cpu + '1'
@@ -173,18 +173,18 @@ else
 fi
 '''
 
-run_command('sh', '-c', 'rm tmp_link*') 
+run_command('sh', '-c', 'rm tmp_link*')
 can_link_symlink = run_command('sh', '-c', gen_header).stdout().strip()
 if can_link_symlink.to_int() == 1
     run_command('sh', '-c', 'rm tmp_link*')
-endif 
+endif
 
 config_h.set(
     'CAN_LINK_SYMLINK', can_link_symlink,
     description : 'Whether link() works on symlinks')
 
 
-# OS Specific checks 
+# OS Specific checks
 #============================================================================
 
 
@@ -192,7 +192,7 @@ config_h.set(
 #---------------------------------------------------
 if sys_name == 'freebsd'
     add_project_arguments('-D_GNU_SOURCE', language : 'cpp')
-    config_h.set('_GNU_SOURCE', 1)  
+    config_h.set('_GNU_SOURCE', 1)
 endif
 
 
@@ -203,7 +203,7 @@ if sys_name == 'Darwin'
 endif
 
 
-# Solaris requires -lsocket -lnsl for network functions 
+# Solaris requires -lsocket -lnsl for network functions
 #---------------------------------------------------
 if sys_name == 'sunos'
     add_project_arguments('-lsocket', language : 'cpp')

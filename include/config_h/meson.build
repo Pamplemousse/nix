@@ -11,7 +11,7 @@ config_h = configure_file(
     output : 'config.h',
     configuration : config_h)
 
-add_project_arguments('-include', 'config.h', language : 'cpp')
+add_project_arguments('-include', 'config_h/config.h', language : 'cpp')
 
 
 # install headers
