@@ -7,7 +7,7 @@ libutil_inc = [include_directories('.')]
 # dependencies
 #============================================================================
 
-libutil_dep_list = [
+_libutil_external_dep_list = [
     aws_sdk_cpp_dep,
     boost_dep,
     libarchive_dep,
@@ -22,6 +22,14 @@ libutil_dep_list = [
     zlib_dep,
 ]
 
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libutil_nix_dep_list_names = []
+_libutil_nix_dep_list = []
+foreach d : _libutil_nix_dep_list_names
+    _libutil_nix_dep_list += get_variable(d)
+endforeach
+
+libutil_dep_list = _libutil_external_dep_list + _libutil_nix_dep_list
 
 # src files
 #============================================================================
@@ -91,7 +99,6 @@ libutil_cxx_args = []
 
 libutil_link_args = []
 
-
 # build library
 #---------------------------------------------------
 libutil_lib = library(
@@ -107,7 +114,6 @@ libutil_lib = library(
     cpp_args : libutil_cxx_args,
     link_args : libutil_link_args,
     dependencies : libutil_dep_list)
-
 
 # install headers
 #---------------------------------------------------

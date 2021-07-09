@@ -11,7 +11,7 @@
 project(
     'nix',
     'cpp',
-    meson_version : '>= 0.57.0',
+    meson_version : '>= 0.58.0',
     default_options : [
         'cpp_std=c++17',
         'warning_level=3',
@@ -227,6 +227,7 @@ project_dirs = [
     'src',
     'scripts',
     'doc/manual',
+    'fuzz',
     #'misc',
     #'tests',
 ]

@@ -7,20 +7,29 @@ libcmd_inc = [include_directories('.')]
 # dependencies
 #============================================================================
 
-libcmd_dep_list = [
+_libcmd_external_dep_list = [
     gc_dep,
     libsodium_dep,
     liblowdown_dep,
     nlohmann_json_dep,
     openssl_dep,
     pthread_dep,
-    
-    
-    libutil_dep,
-    libmain_dep,
-    libstore_dep,
-    libexpr_dep,
-    libfetchers_dep]
+]
+
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libcmd_nix_dep_list_names = [
+    'libutil_dep',
+    'libmain_dep',
+    'libstore_dep',
+    'libexpr_dep',
+    'libfetchers_dep',
+]
+_libcmd_nix_dep_list = []
+foreach d : _libcmd_nix_dep_list_names
+    _libcmd_nix_dep_list += get_variable(d)
+endforeach
+
+libcmd_dep_list = _libcmd_external_dep_list + _libcmd_nix_dep_list
 
 
 # src files

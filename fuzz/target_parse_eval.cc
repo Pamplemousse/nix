@@ -9,7 +9,7 @@
 #include "url.hh"
 
 // Our memory management utils to seriously reduce the amount of leaks.
-#include "memory.hh"
+#include "libraries/memory.hh"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 

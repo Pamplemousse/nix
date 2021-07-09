@@ -12,7 +12,7 @@ if [[ $(find fuzz/seeds/ -type l | wc -l) -lt 1 ]]; then
 fi
 
 # Minimize the initial seeds into the corpus.
-ASAN_OPTIONS=detect_leaks=false ./fuzzer \
+ASAN_OPTIONS=detect_leaks=false ./buildir/fuzz/parse_eval-fuzasan \
   -artifact_prefix="fuzz/results/" \
   -merge=1 \
   fuzz/corpus/ fuzz/seeds/
@@ -28,7 +28,7 @@ cat fuzz/dictionaries/* > "$DICTIONARY"
 # https://google.github.io/oss-fuzz/faq/#how-do-you-handle-timeouts-and-ooms
 MAX_MEMORY=2500
 
-ASAN_OPTIONS="detect_leaks=false" ./fuzzer \
+ASAN_OPTIONS="detect_leaks=false" ./buildir/fuzz/parse_eval-fuzasan \
   -artifact_prefix="fuzz/results/" \
   -dict="$DICTIONARY" \
   -rss_limit_mb="$MAX_MEMORY" \

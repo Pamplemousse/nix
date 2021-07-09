@@ -6,7 +6,7 @@ libfetchers_inc = []
 # dependencies
 #============================================================================
 
-libfetchers_dep_list = [
+_libfetchers_external_dep_list = [
     libbz2_dep,
     libcurl_dep,
     libdl_dep,
@@ -15,10 +15,19 @@ libfetchers_dep_list = [
     #nlohmann_json_dep,
     pthread_dep,
     sqlite3_dep,
+]
 
-    libutil_dep,
-    libstore_dep]
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libfetchers_nix_dep_list_names = [
+    'libutil_dep',
+    'libstore_dep',
+]
+_libfetchers_nix_dep_list = []
+foreach d : _libfetchers_nix_dep_list_names
+    _libfetchers_nix_dep_list += get_variable(d)
+endforeach
 
+libfetchers_dep_list = _libfetchers_external_dep_list + _libfetchers_nix_dep_list
 
 # src files
 #============================================================================

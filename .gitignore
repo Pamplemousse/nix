@@ -75,6 +75,7 @@ perl/Makefile.config
 /tests/lang/*.ast
 
 # /fuzz/
+fuzz/build
 fuzz/corpus/*
 fuzz/results/*
 fuzz/seeds/*

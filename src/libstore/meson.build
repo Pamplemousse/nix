@@ -5,8 +5,7 @@ libstore_inc = [include_directories('.')]
 
 # dependencies
 #============================================================================
-
-libstore_dep_list = [
+_libstore_external_dep_list = [
     aws_sdk_cpp_dep,
     libbz2_dep,
     libcurl_dep,
@@ -15,10 +14,17 @@ libstore_dep_list = [
     libsodium_dep,
     nlohmann_json_dep,
     pthread_dep,
-    sqlite3_dep,
+    sqlite3_dep
+]
 
-    libutil_dep]
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libstore_nix_dep_list_names = ['libutil_dep']
+_libstore_nix_dep_list = []
+foreach d : _libstore_nix_dep_list_names
+    _libstore_external_dep_list += get_variable(d)
+endforeach
 
+libstore_dep_list = _libstore_external_dep_list + _libstore_nix_dep_list
 
 # src files
 #============================================================================
@@ -204,6 +210,8 @@ libstore_config = pkg.generate(
     filebase : 'nix-store',
     extra_cflags : '-std=c++17',
     description : 'Nix Package Manager.')
+
+# TODO: needed for cov and fuzasan derivatives?
 
 
 # declare dependency

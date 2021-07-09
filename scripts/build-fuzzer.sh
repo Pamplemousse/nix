@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 
-export BUILD_DEBUG=1
+BUILD_DIR="fuzz/build"
 
-./bootstrap.sh
-./configure $configureFlags --prefix="$(pwd)/outputs/out" --enable-gc=no
+OPTIONS="\
+    -Ddebug=true \
+    -Doptimization=0 \
+    -Denable_s3=disabled \
+    -Denable_gc=disabled \
+    --prefix=$(pwd)/outputs/out"
 
-# Build our shared library to do leak-free and GC-free memory management.
-make memory
+if [ ! -d $BUILD_DIR ]; then
+    meson setup $BUILD_DIR $OPTIONS
+else
+    meson --reconfigure $BUILD_DIR $OPTIONS
+fi
 
-# * `shared-libasan` necessary because of `-Wl,-z,defs` in `mk/libraries.mk`.
-#   See https://github.com/google/sanitizers/wiki/AddressSanitizer#faq ;
-# * `AddressSanitizerUseAfterScope` seems to raise a lot of false positive;
-make fuzzer \
-  CXXFLAGS="-O0 -fsanitize=address -fno-sanitize-address-use-after-scope" \
-  LDFLAGS="-fsanitize=address -shared-libasan" \
-  OPTIMIZE=0
+meson compile -C $BUILD_DIR -v parse_eval-fuzasan

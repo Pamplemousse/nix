@@ -7,13 +7,23 @@ libmain_inc = []
 # dependencies
 #============================================================================
 
-libmain_dep_list = [
+_libmain_external_dep_list = [
     pthread_dep,
     openssl_dep,
     libsodium_dep,
+]
 
-    libutil_dep,
-    libstore_dep]
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libmain_nix_dep_list_names = [
+    'libutil_dep',
+    'libstore_dep',
+]
+_libmain_nix_dep_list = []
+foreach d : _libmain_nix_dep_list_names
+    _libmain_nix_dep_list += get_variable(d)
+endforeach
+
+libmain_dep_list = _libmain_external_dep_list + _libmain_nix_dep_list
 
 
 # src files

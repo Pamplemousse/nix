@@ -7,16 +7,26 @@ libexpr_inc = proj_inc
 # dependencies
 #============================================================================
 
-libexpr_dep_list = [
+_libexpr_external_dep_list = [
     boost_dep,
     libdl_dep,
     libsodium_dep,
     gc_dep,
+]
 
-    libutil_dep,
-    libstore_dep,
-    libmain_dep,
-    libfetchers_dep]
+# Allow some "meta-programming" to generate derived versions of this library for fuzzing.
+_libexpr_nix_dep_list_names = [
+    'libutil_dep',
+    'libstore_dep',
+    'libmain_dep',
+    'libfetchers_dep',
+]
+_libexpr_nix_dep_list = []
+foreach d : _libexpr_nix_dep_list_names
+    _libexpr_nix_dep_list += get_variable(d)
+endforeach
+
+libexpr_dep_list = _libexpr_external_dep_list + _libexpr_nix_dep_list
 
 
 # src files
@@ -139,6 +149,7 @@ libexpr_lib = library(
     link_args : libexpr_link_args,
     dependencies : libexpr_dep_list)
 
+
 # install headers
 #---------------------------------------------------
 install_headers(
@@ -159,6 +170,7 @@ install_headers(
 #     extra_cflags : '-std=c++17',
 #     description : 'Nix Package Manager.')
 
+# TODO: necessary for cov and fuzasan flavors?
 
 # declare dependency
 #---------------------------------------------------
