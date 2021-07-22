@@ -11,6 +11,11 @@
 // Our memory management utils to seriously reduce the amount of leaks.
 #include "libraries/memory.hh"
 
+inline void cleanup() {
+  // Free all allocated memory before next run.
+  free_arena();
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   using namespace nix;
@@ -46,15 +51,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   }
   // Some errors are legitimate, so we want to gracefully return when they are raised.
   catch (const ParseError &) {
+    cleanup();
     return 0;
   }
   catch (const UndefinedVarError &) {
+    cleanup();
     return 0;
   }
   catch (const TypeError &) {
+    cleanup();
     return 0;
   }
   catch (const Unsupported &) {
+    cleanup();
     return 0;
   }
 
@@ -67,36 +76,47 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   }
   // Some errors are legitimate, so we want to gracefully return when they are raised.
   catch (const BadHash &) {
+    cleanup();
     return 0;
   }
   catch (const BadStorePath &) {
+    cleanup();
     return 0;
   }
   catch (const BadURL &) {
+    cleanup();
     return 0;
   }
   catch (const ExecError &) {
+    cleanup();
     return 0;
   }
   catch (const UsageError &) {
+    cleanup();
     return 0;
   }
   catch (const FileTransferError &) {
+    cleanup();
     return 0;
   }
   catch (const TypeError &) {
+    cleanup();
     return 0;
   }
   catch (const EvalError &) {
+    cleanup();
     return 0;
   }
   catch (const SysError &) {
+    cleanup();
     return 0;
   }
   catch (const UndefinedVarError &) {
+    cleanup();
     return 0;
   }
   catch (const Unsupported &) {
+    cleanup();
     return 0;
   }
 
@@ -110,18 +130,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   }
   // Some errors are legitimate, so we want to gracefully return when they are raised.
   catch (const EvalError &) {
+    cleanup();
     return 0;
   }
   catch (const FileTransferError &) {
+    cleanup();
     return 0;
   }
   catch (const SysError &) {
+    cleanup();
     return 0;
   }
   catch (const UndefinedVarError &) {
+    cleanup();
     return 0;
   }
   catch (const Unsupported &) {
+    cleanup();
     return 0;
   }
 
@@ -132,18 +157,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
       }
       // Some errors are legitimate, so we want to gracefully return when they are raised.
       catch (const EvalError &) {
+        cleanup();
         return 0;
       }
       catch (const Unsupported &) {
+        cleanup();
         return 0;
       }
 
       string outputName = i.queryOutputName();
-      if (outputName == "")
+      if (outputName == "") {
           // Real code throws an error in that case, as it lacks the `outputName` attribute;
           // We exit gracefully instead.
+          cleanup();
           return 0;
-      else {
+      } else {
           Path rootName = absPath(gcRoot);
           if (++rootNr > 1) rootName += "-" + std::to_string(rootNr);
           auto store2 = state->store.dynamic_pointer_cast<LocalFSStore>();
@@ -152,8 +180,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
       }
   }
 
-  // Free all allocated memory before next run.
-  free_arena();
 
+  cleanup();
   return 0;
 }
