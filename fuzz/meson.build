@@ -161,26 +161,22 @@ fuzz_target_fuzasan_link_args = nix_link_args + [
 ]
 
 
-# src files
-#============================================================================
-
-parse_eval_fuzz_src = files('target_parse_eval.cc')
-
-
 # build
 #============================================================================
 
 # build executables
 #---------------------------------------------------
 
-foreach e : ['parse_eval']
+foreach e : ['parse', 'parse_eval']
     foreach flavour : fuzzing_flavours
         # <e>_<flavour>_bin
         set_variable(
             '@0@_@1@_bin'.format(e, flavour),
             executable(
                 '@0@-@1@'.format(e, flavour),
-                sources : [get_variable('@0@_fuzz_src'.format(e))],
+                sources : [
+                    files('target_@0@.cc'.format(e))
+                ],
                 install : true,
                 install_mode : 'rwxr-xr-x',
                 install_dir : bindir,

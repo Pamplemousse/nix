@@ -15,4 +15,6 @@ else
     meson --reconfigure $BUILD_DIR $OPTIONS
 fi
 
-meson compile -C $BUILD_DIR -v parse_eval-fuzasan
+meson compile -C $BUILD_DIR -v \
+  parse-fuzasan \
+  parse_eval-fuzasan
