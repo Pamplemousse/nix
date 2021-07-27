@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import argparse
+import fileinput
+import os
+import subprocess
+import tempfile
+import sys
+
+
+assert sys.version_info >= (3, 5)
+
+SCRIPTS_DIR = os.path.dirname(os.path.realpath(__file__))
+FUZZ_DIR = os.path.join(SCRIPTS_DIR, '..', 'fuzz')
+
+
+def main(cli_arguments):
+    corpus_path = os.path.join(FUZZ_DIR, 'corpus')
+    dictionaries_path = os.path.join(FUZZ_DIR, 'dictionaries')
+    seeds_path = os.path.join(FUZZ_DIR, 'seeds')
+
+    os.environ['ASAN_OPTIONS'] = 'detect_leaks=false,detect_odr_violation=0'
+
+    # Create the dictionary file.
+    handle, dictionary = tempfile.mkstemp()
+    with os.fdopen(handle, 'w') as d:
+        words = fileinput.input(
+            map(
+                lambda f: f.path,
+                os.scandir(dictionaries_path)
+            )
+        )
+        for w in words:
+            d.write(w)
+
+    # Adding test expressions to the initial seeds.
+    link_seeds = list(filter(lambda p: p.is_symlink(), os.scandir(seeds_path)))
+    if len(link_seeds) == 0:
+        tests_path = os.path.join(SCRIPTS_DIR, '..', 'tests', 'lang')
+
+        expressions = list(filter(lambda f: f[-4:] == '.nix', os.listdir(tests_path)))
+        for e in expressions:
+            source = os.path.join(tests_path, e)
+            destination = os.path.join(seeds_path, e)
+            os.symlink(source, destination)
+
+    # Try/Finally block ensures cleaning even when user interrupts a fuzzer subprocess.
+    try:
+        # Minimize the initial seeds into the corpus.
+        subprocess.run([
+            './buildir/fuzz/parse-fuzasan',
+            "-artifact_prefix={}/".format(cli_arguments.results_folder),
+            '-merge=1',
+            '-detect_leaks=0',
+            corpus_path,
+            seeds_path,
+        ])
+
+        # OSS-fuzz has a limit of 2.5GB before treating an input as an Out-Of-Memory bug:
+        # https://google.github.io/oss-fuzz/faq/#how-do-you-handle-timeouts-and-ooms
+        max_memory = 2500
+
+        # Run the fuzzer!
+        subprocess.run([
+            './buildir/fuzz/parse-fuzasan',
+            "-artifact_prefix={}/".format(cli_arguments.results_folder),
+            "-dict={}".format(dictionary),
+            "-rss_limit_mb={}".format(max_memory),
+            '-detect_leaks=0',
+            '-fork=4',
+            corpus_path,
+        ])
+
+    finally:
+        os.remove(dictionary)
+
+
+if __name__ == '__main__':
+    default_results_folder = os.path.join(FUZZ_DIR, 'results')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--results-folder', default=default_results_folder, help='Where to store the results of the fuzzing.')
+
+    cli_arguments = parser.parse_args()
+
+    main(cli_arguments)
