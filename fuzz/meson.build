@@ -19,6 +19,13 @@ library_cov_cxx_args = [
 ]
 library_cov_link_args = []
 
+library_fuz_cxx_args = [
+    '-fsanitize=fuzzer-no-link',
+]
+library_fuz_link_args = [
+    '-fsanitize=fuzzer-no-link',
+]
+
 library_fuzasan_cxx_args = [
   '-fsanitize=fuzzer-no-link,address',
   # `shared-libasan` is necessary because of `-Wl,-z,defs` in `mk/libraries.mk`;
@@ -37,11 +44,13 @@ library_fuzasan_link_args = [
 # Different "flavours" for fuzzing binaries and libraries, corresponding to the different instrumentations:
 # coverage, fuzzer with ASan, etc.
 #============================================================================
-fuzzing_flavours = ['cov', 'fuzasan']
+fuzzing_flavours = ['cov', 'fuz', 'fuzasan']
 
 
 # Alter different libraries with different flavours of instrumentation;
-# e.g. for every `libsomething`, produce `libcovsomething`, `libfuzasansomething`, etc.
+# e.g.:
+#   for every `libsomething`,
+#   produce   `libcovsomething`, `libfuzsomething`, `libfuzasansomething`, etc.
 #============================================================================
 
 # Order matters, as the first ones are requirements for the last ones.
@@ -117,6 +126,17 @@ cov_dep_list = [
     fuzz_libmemory_dep,
 ]
 
+fuz_dep_list = [
+    libfuzutil_dep,
+    libfuzstore_dep,
+    libfuzmain_dep,
+    libfuzexpr_dep,
+    libfuzfetchers_dep,
+    libfuzcmd_dep,
+
+    fuzz_libmemory_dep,
+]
+
 fuzasan_dep_list = [
     libfuzasanutil_dep,
     libfuzasanstore_dep,
@@ -131,6 +151,10 @@ fuzasan_dep_list = [
 # common flags for fuzz targets for fuzz
 #============================================================================
 
+#
+# Coverage
+#
+
 fuzz_target_cov_cxx_args = nix_cxx_args + [
     '-fsanitize=fuzzer',
     '-fprofile-instr-generate',
@@ -144,6 +168,21 @@ fuzz_target_cov_link_args = nix_link_args + [
     # '-fprofile-instr-generate',
     # '-fcoverage-mapping',
 ]
+
+#
+# Plain fuzzer, without sanitizers
+#
+
+fuzz_target_fuz_cxx_args = nix_cxx_args + [
+    '-fsanitize=fuzzer',
+]
+fuzz_target_fuz_link_args = nix_link_args + [
+    '-fsanitize=fuzzer',
+]
+
+#
+# Fuzzer with ASAN
+#
 
 fuzz_target_fuzasan_cxx_args = nix_cxx_args + [
     '-fsanitize=fuzzer,address',
