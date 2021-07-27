@@ -48,7 +48,7 @@ def main(cli_arguments):
     try:
         # Minimize the initial seeds into the corpus.
         subprocess.run([
-            './buildir/fuzz/parse-fuzasan',
+            cli_arguments.fuzzer,
             "-artifact_prefix={}/".format(cli_arguments.results_folder),
             '-merge=1',
             '-detect_leaks=0',
@@ -62,7 +62,7 @@ def main(cli_arguments):
 
         # Run the fuzzer!
         subprocess.run([
-            './buildir/fuzz/parse-fuzasan',
+            cli_arguments.fuzzer,
             "-artifact_prefix={}/".format(cli_arguments.results_folder),
             "-dict={}".format(dictionary),
             "-rss_limit_mb={}".format(max_memory),
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     default_results_folder = os.path.join(FUZZ_DIR, 'results')
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('fuzzer', help='The binary to run the fuzzing session with.')
     parser.add_argument('--results-folder', default=default_results_folder, help='Where to store the results of the fuzzing.')
 
     cli_arguments = parser.parse_args()
