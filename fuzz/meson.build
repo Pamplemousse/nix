@@ -26,6 +26,8 @@ library_fuzasan_cxx_args = [
   '-shared-libasan',
   # `AddressSanitizerUseAfterScope` seems to raise a lot of false positive;
   '-fno-sanitize-address-use-after-scope',
+  # Destructors called twice (probably because of static variables duplicated amongst libraries) cause double-frees.
+  '-fno-c++-static-destructors',
 ]
 library_fuzasan_link_args = [
   '-fsanitize=fuzzer-no-link,address',
