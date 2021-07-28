@@ -34,15 +34,16 @@ def main(cli_arguments):
             d.write(w)
 
     # Adding test expressions to the initial seeds.
-    link_seeds = list(filter(lambda p: p.is_symlink(), os.scandir(seeds_path)))
-    if len(link_seeds) == 0:
-        tests_path = os.path.join(SCRIPTS_DIR, '..', 'tests', 'lang')
+    if (cli_arguments.seeds_from_tests):
+        link_seeds = list(filter(lambda p: p.is_symlink(), os.scandir(seeds_path)))
+        if len(link_seeds) == 0:
+            tests_path = os.path.join(SCRIPTS_DIR, '..', 'tests', 'lang')
 
-        expressions = list(filter(lambda f: f[-4:] == '.nix', os.listdir(tests_path)))
-        for e in expressions:
-            source = os.path.join(tests_path, e)
-            destination = os.path.join(seeds_path, e)
-            os.symlink(source, destination)
+            expressions = list(filter(lambda f: f[-4:] == '.nix', os.listdir(tests_path)))
+            for e in expressions:
+                source = os.path.join(tests_path, e)
+                destination = os.path.join(seeds_path, e)
+                os.symlink(source, destination)
 
     # Try/Finally block ensures cleaning even when user interrupts a fuzzer subprocess.
     try:
@@ -73,6 +74,8 @@ def main(cli_arguments):
 
     finally:
         os.remove(dictionary)
+        for s in os.listdir(seeds_path):
+            os.remove(s)
 
 
 if __name__ == '__main__':
@@ -81,6 +84,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('fuzzer', help='The binary to run the fuzzing session with.')
     parser.add_argument('--results-folder', default=default_results_folder, help='Where to store the results of the fuzzing.')
+    parser.add_argument('--seeds-from-tests', action='store_true', help='Whether to use the `nix` expression in tests as seeds.')
 
     cli_arguments = parser.parse_args()
 
