@@ -17,4 +17,5 @@ fi
 
 meson compile -C $BUILD_DIR -v \
   parse-fuzasan \
-  parse_eval-fuzasan
+  parse_eval-fuzasan \
+  parse_store_path-fuzasan

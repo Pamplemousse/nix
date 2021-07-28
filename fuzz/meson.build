@@ -208,7 +208,7 @@ fuzz_target_fuzasan_link_args = nix_link_args + [
 # build executables
 #---------------------------------------------------
 
-foreach e : ['parse', 'parse_eval']
+foreach e : ['parse', 'parse_eval', 'parse_store_path']
     foreach flavour : fuzzing_flavours
         # <e>_<flavour>_bin
         set_variable(
