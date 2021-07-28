@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import subprocess
+import sys
+
+
+assert sys.version_info >= (3, 5)
+
+SCRIPTS_DIR = os.path.dirname(os.path.realpath(__file__))
+FUZZ_DIR = os.path.join(SCRIPTS_DIR, '..', 'fuzz')
+
+
+def main(cli_arguments):
+    os.environ['ASAN_OPTIONS'] = 'detect_leaks=false,detect_odr_violation=0'
+
+    # OSS-fuzz has a limit of 2.5GB before treating an input as an Out-Of-Memory bug:
+    # https://google.github.io/oss-fuzz/faq/#how-do-you-handle-timeouts-and-ooms
+    max_memory = 2500
+
+    # Re-run each file with the fuzzer, 10 times, in isolation.
+    for f in cli_arguments.files:
+        for _ in range(10):
+            r = subprocess.run([
+                cli_arguments.fuzzer,
+                '-rss_limit_mb={}'.format(max_memory),
+                '-detect_leaks=0',
+                f.name,
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            if r.returncode != 0:
+                print("reproduced: {}".format(f.name))
+                break
+        else:
+            # All the runs on `f` went smoothly, we consider it to be a false positive.
+            if (cli_arguments.clean):
+                print("deleting: {}".format(f.name))
+                subprocess.run(['rm', f.name])
+            else:
+                print("would be deleted: {}".format(f.name))
+
+
+if __name__ == '__main__':
+    default_results_folder = os.path.join(FUZZ_DIR, '..', 'results')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("fuzzer", help="The binary to run the files with.")
+    parser.add_argument("files", nargs='+', type=argparse.FileType('r'), help="Crashers, OOM-ers to triage.")
+    parser.add_argument("--clean", action="store_true", default=False, help="Delete false positives if set to True.")
+
+    cli_arguments = parser.parse_args()
+
+    main(cli_arguments)
