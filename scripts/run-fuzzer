@@ -15,7 +15,6 @@ FUZZ_DIR = os.path.join(SCRIPTS_DIR, '..', 'fuzz')
 
 
 def main(cli_arguments):
-    corpus_path = os.path.join(FUZZ_DIR, 'corpus')
     dictionaries_path = os.path.join(FUZZ_DIR, 'dictionaries')
     seeds_path = os.path.join(FUZZ_DIR, 'seeds')
 
@@ -53,7 +52,7 @@ def main(cli_arguments):
             "-artifact_prefix={}/".format(cli_arguments.results_folder),
             '-merge=1',
             '-detect_leaks=0',
-            corpus_path,
+            cli_arguments.corpus_folder,
             seeds_path,
         ])
 
@@ -69,7 +68,7 @@ def main(cli_arguments):
             "-rss_limit_mb={}".format(max_memory),
             '-detect_leaks=0',
             '-fork=4',
-            corpus_path,
+            cli_arguments.corpus_folder,
         ])
 
     finally:
@@ -80,10 +79,12 @@ def main(cli_arguments):
 
 if __name__ == '__main__':
     default_results_folder = os.path.join(FUZZ_DIR, 'results')
+    default_corpus_folder = os.path.join(FUZZ_DIR, 'corpus')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('fuzzer', help='The binary to run the fuzzing session with.')
     parser.add_argument('--results-folder', default=default_results_folder, help='Where to store the results of the fuzzing.')
+    parser.add_argument('--corpus-folder', default=default_corpus_folder, help='Where to find the corpus for the given fuzzer.')
     parser.add_argument('--seeds-from-tests', action='store_true', help='Whether to use the `nix` expression in tests as seeds.')
 
     cli_arguments = parser.parse_args()
