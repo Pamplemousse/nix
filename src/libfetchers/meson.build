@@ -12,7 +12,6 @@ _libfetchers_external_dep_list = [
     libdl_dep,
     libseccomp_dep,
     libsodium_dep,
-    #nlohmann_json_dep,
     pthread_dep,
     sqlite3_dep,
 ]

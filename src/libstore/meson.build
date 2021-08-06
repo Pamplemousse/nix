@@ -1,7 +1,10 @@
 # libstore build file
 #============================================================================
 
-libstore_inc = [include_directories('.')]
+libstore_inc = [include_directories(
+    '.',
+    join_paths('..'),
+)]
 
 # dependencies
 #============================================================================
@@ -12,7 +15,6 @@ _libstore_external_dep_list = [
     libdl_dep,
     libseccomp_dep,
     libsodium_dep,
-    nlohmann_json_dep,
     pthread_dep,
     sqlite3_dep
 ]

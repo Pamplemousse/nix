@@ -1,7 +1,10 @@
 # libmain build file
 #============================================================================
 
-libcmd_inc = [include_directories('.')]
+libcmd_inc = [include_directories(
+    '.',
+    join_paths('..'),
+)]
 
 
 # dependencies
@@ -11,7 +14,6 @@ _libcmd_external_dep_list = [
     gc_dep,
     libsodium_dep,
     liblowdown_dep,
-    nlohmann_json_dep,
     openssl_dep,
     pthread_dep,
 ]
