@@ -23,7 +23,6 @@ libutil_tests_src = files(
     'json.cc',
     'logging.cc',
     'lru-cache.cc',
-    'main.cc',
     'pool.cc',
     'tests.cc',
     'url.cc',
